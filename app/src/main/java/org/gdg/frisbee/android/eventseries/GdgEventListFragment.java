@@ -1,6 +1,7 @@
 package org.gdg.frisbee.android.eventseries;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 
 import org.gdg.frisbee.android.Const;
 import org.gdg.frisbee.android.R;
@@ -21,6 +22,14 @@ import retrofit.RetrofitError;
 public class GdgEventListFragment extends EventListFragment {
 
     public static EventListFragment newInstance(String plusId) {
+        EventListFragment fragment = new GdgEventListFragment();
+        Bundle arguments = new Bundle();
+        arguments.putString(Const.EXTRA_PLUS_ID, plusId);
+        fragment.setArguments(arguments);
+        return fragment;
+    }
+
+    public static Fragment newInstancePastEvents(final String plusId) {
         EventListFragment fragment = new GdgEventListFragment();
         Bundle arguments = new Bundle();
         arguments.putString(Const.EXTRA_PLUS_ID, plusId);

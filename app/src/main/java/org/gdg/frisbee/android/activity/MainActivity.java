@@ -72,10 +72,10 @@ public class MainActivity extends GdgNavDrawerActivity {
     private static final String ARG_CHAPTERS = "chapters";
 
     private static final int[] PAGES = {
-        R.string.news, R.string.info, R.string.events
+        R.string.news, R.string.info, R.string.events, R.string.past_events
     };
     private static final int[] ORGANIZER_PAGES = {
-        R.string.news, R.string.info, R.string.events, R.string.for_leads
+        R.string.news, R.string.info, R.string.events, R.string.past_events, R.string.for_leads
     };
 
     public static final int REQUEST_FIRST_START_WIZARD = 100;
@@ -408,6 +408,8 @@ public class MainActivity extends GdgNavDrawerActivity {
                 case 2:
                     return GdgEventListFragment.newInstance(gplusId);
                 case 3:
+                    return GdgEventListFragment.newInstancePastEvents(gplusId);
+                case 4:
                     return LeadFragment.newInstance(gplusId);
             }
             return null;
