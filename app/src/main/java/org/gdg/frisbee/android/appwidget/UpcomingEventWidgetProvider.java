@@ -82,8 +82,7 @@ public class UpcomingEventWidgetProvider extends AppWidgetProvider {
         public void buildUpdate(final Context context, final AppWidgetManager manager, final ComponentName thisWidget) {
             final RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.widget_upcoming_event);
             Intent mainIntent = new Intent(context, MainActivity.class);
-            final PendingIntent pi = PendingIntent.getActivity(context, REQUEST_CODE_LAUNCH_FRISBEE, mainIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            views.setOnClickPendingIntent(R.id.container, pi);
+            setOnClick(context, views, mainIntent);
 
             App.getInstance().getModelCache().getAsync(Const.CACHE_KEY_CHAPTER_LIST_HUB, false, new ModelCache.CacheListener() {
                 @Override
@@ -134,7 +133,7 @@ public class UpcomingEventWidgetProvider extends AppWidgetProvider {
 
                                         Intent i = new Intent(UpdateService.this, EventActivity.class);
                                         i.putExtra(Const.EXTRA_EVENT_ID, firstEvent.getId());
-                                        views.setOnClickPendingIntent(R.id.container, PendingIntent.getActivity(UpdateService.this, 0, i, 0));
+                                        setOnClick(UpdateService.this, views, i);
 
                                     } else {
                                         showErrorChild(views, R.string.no_scheduled_events, UpdateService.this);
@@ -155,7 +154,7 @@ public class UpcomingEventWidgetProvider extends AppWidgetProvider {
             views.setTextViewText(R.id.textView_no_events, getString(errorStringResource));
             showChild(views, 0);
             Intent i = new Intent(context, MainActivity.class);
-            views.setOnClickPendingIntent(R.id.container, PendingIntent.getActivity(context, 0, i, 0));
+            setOnClick(context, views, i);
         }
 
         private void showChild(RemoteViews views, int i) {
@@ -165,6 +164,11 @@ public class UpcomingEventWidgetProvider extends AppWidgetProvider {
                 views.setDisplayedChild(R.id.viewFlipper, 0);
             }
         }
+    }
+
+    private static void setOnClick(final Context context, final RemoteViews views, final Intent intent) {
+        final PendingIntent pi = PendingIntent.getActivity(context, REQUEST_CODE_LAUNCH_FRISBEE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        views.setOnClickPendingIntent(R.id.container, pi);
     }
 
     @Override
