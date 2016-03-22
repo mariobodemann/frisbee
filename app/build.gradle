@@ -140,6 +140,7 @@ dependencies {
     //Play Services
     compile "com.google.android.gms:play-services-games:$rootProject.playServicesVersion"
     compile "com.google.android.gms:play-services-plus:$rootProject.playServicesVersion"
+    compile "com.google.android.gms:play-services-auth:$rootProject.playServicesVersion"
     compile "com.google.android.gms:play-services-appstate:$rootProject.playServicesVersion"
     compile "com.google.android.gms:play-services-analytics:$rootProject.playServicesVersion"
     compile "com.google.android.gms:play-services-appinvite:$rootProject.playServicesVersion"
@@ -171,7 +172,6 @@ dependencies {
 
     //Others
     compile 'io.doorbell:android-sdk:0.2.6@aar'
-    compile 'org.jsoup:jsoup:1.8.2'
     compile "net.danlew:android.joda:$rootProject.jodaTimeVersion"
     compile 'com.tasomaniac:delayed-progress:0.3'
     compile 'com.google.code.findbugs:jsr305:2.0.1'

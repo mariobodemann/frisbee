@@ -25,8 +25,12 @@ public final class PrefUtils {
     private static final String PREFS_ACHIEVEMENTS_PREFIX = "achievement_unlocked_";
     private static final String PREFS_WIDGET_ADDED = "widget_added";
     private static final String PREFS_FATAL_GOOGLE_PLAY_SERVICE = "fatal_google_play_service";
+    private static final String PREFS_USER_DISPLAY_NAME = "user_display_name";
+    private static final String PREFS_USER_ID = "user_id";
+    private static final String PREFS_USER_SERVER_AUTH_CODE = "user_server_auth_code";
 
     private static final boolean PREFS_FIRST_START_DEFAULT = true;
+
 
     private PrefUtils() {
         // Prevent instances of this class being created.
@@ -132,12 +136,6 @@ public final class PrefUtils {
         prefs(context).edit().putInt(PREFS_VERSION_CODE, newVersion).apply();
     }
 
-    public static void resetInitialSettings(final Context context) {
-        prefs(context).edit()
-            .clear()
-            .apply();
-    }
-
     public static boolean isAchievementUnlocked(final Context context, final String achievement) {
         return prefs(context).getBoolean(PREFS_ACHIEVEMENTS_PREFIX + achievement, false);
     }
@@ -178,5 +176,18 @@ public final class PrefUtils {
 
     public static void setFatalPlayServiceMessageShown(Context context) {
         prefs(context).edit().putBoolean(PREFS_FATAL_GOOGLE_PLAY_SERVICE, false).apply();
+    }
+
+    public static void setUser(Context context, String displayName, String id, String serverAuthCode) {
+        prefs(context).edit()
+            .putString(PREFS_USER_DISPLAY_NAME, displayName)
+            .putString(PREFS_USER_ID, id)
+            .putString(PREFS_USER_SERVER_AUTH_CODE, serverAuthCode)
+            .apply();
+
+    }
+
+    public static String getUserServerAuthCode(Context context) {
+        return prefs(context).getString(PREFS_USER_SERVER_AUTH_CODE, null);
     }
 }

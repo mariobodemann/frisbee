@@ -267,13 +267,14 @@ public abstract class GdgNavDrawerActivity extends GdgActivity {
             .setPositiveButton(R.string.signin, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    PrefUtils.setSignedIn(GdgNavDrawerActivity.this);
-
-                    recreateGoogleApiClientIfNeeded();
-                    getGoogleApiClient().connect();
+                    navigateToSignIn();
                 }
             })
             .show();
+    }
+
+    private void navigateToSignIn() {
+        // TODO scroll to login button
     }
 
     private void onDrawerSpecialItemClick(int itemId, Bundle data) {

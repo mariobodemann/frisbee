@@ -22,6 +22,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.plus.Plus;
+
 import org.gdg.frisbee.android.R;
 import org.gdg.frisbee.android.common.BaseFragment;
 
@@ -36,6 +40,9 @@ public class FirstStartStep2Fragment extends BaseFragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_welcome_step2, container, false);
         ButterKnife.bind(this, v);
+
+        SignInButton signInButton = (SignInButton) v.findViewById(R.id.sign_in_button);
+        signInButton.setScopes(new Scope[] {Plus.SCOPE_PLUS_LOGIN, Plus.SCOPE_PLUS_PROFILE});
         return v;
     }
 
@@ -55,28 +62,28 @@ public class FirstStartStep2Fragment extends BaseFragment {
         listener = Step2Listener.EMPTY;
     }
 
-    @OnClick(R.id.googleSignin)
-    public void onSignedIn() {
-        listener.onSignedIn();
+    @OnClick(R.id.sign_in_button)
+    public void onSignInButtonClick() {
+        listener.onSignInButtonClick();
     }
 
     @OnClick(R.id.skipSignin)
-    public void onSkippedSignIn() {
-        listener.onSkippedSignIn();
+    public void onSkippedSignInClick() {
+        listener.onSkippedSignInClick();
     }
 
     public interface Step2Listener {
-        void onSignedIn();
+        void onSignInButtonClick();
 
-        void onSkippedSignIn();
+        void onSkippedSignInClick();
 
         Step2Listener EMPTY = new Step2Listener() {
             @Override
-            public void onSignedIn() {
+            public void onSignInButtonClick() {
             }
 
             @Override
-            public void onSkippedSignIn() {
+            public void onSkippedSignInClick() {
             }
         };
     }

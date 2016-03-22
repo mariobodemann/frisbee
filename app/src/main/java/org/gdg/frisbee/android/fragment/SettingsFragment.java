@@ -26,27 +26,17 @@ import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
-import com.google.android.gms.auth.GoogleAuthException;
-import com.google.android.gms.auth.GoogleAuthUtil;
-import com.google.android.gms.common.Scopes;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.games.Games;
-import com.google.android.gms.plus.Plus;
 
 import org.gdg.frisbee.android.Const;
 import org.gdg.frisbee.android.R;
-import org.gdg.frisbee.android.activity.SettingsActivity;
 import org.gdg.frisbee.android.api.model.Chapter;
 import org.gdg.frisbee.android.api.model.Directory;
 import org.gdg.frisbee.android.api.model.HomeGdgRequest;
 import org.gdg.frisbee.android.app.App;
-import org.gdg.frisbee.android.app.GoogleApiClientFactory;
 import org.gdg.frisbee.android.appwidget.UpcomingEventWidgetProvider;
 import org.gdg.frisbee.android.cache.ModelCache;
-import org.gdg.frisbee.android.common.GdgActivity;
 import org.gdg.frisbee.android.utils.PrefUtils;
 import org.gdg.frisbee.android.view.LocationListPreference;
 
@@ -54,25 +44,22 @@ import java.io.IOException;
 
 public class SettingsFragment extends PreferenceFragment {
 
-    private GoogleApiClient mGoogleApiClient;
-    private LinearLayout mLoading;
-
     private Preference.OnPreferenceChangeListener mOnHomeGdgPreferenceChange =
         new Preference.OnPreferenceChangeListener() {
-        @Override
-        public boolean onPreferenceChange(Preference preference, Object o) {
-            final String homeGdg = (String) o;
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object o) {
+                final String homeGdg = (String) o;
 
-            if (mGoogleApiClient.isConnected()) {
-                setHomeGdg(homeGdg);
+                if (PrefUtils.getUserServerAuthCode(getActivity()) != null) {
+                    setHomeGdg(homeGdg);
+                }
+                // Update widgets to show newest chosen GdgHome events
+                App.getInstance().startService(new Intent(App.getInstance(),
+                    UpcomingEventWidgetProvider.UpdateService.class));
+
+                return true;
             }
-            // Update widgets to show newest chosen GdgHome events
-            App.getInstance().startService(new Intent(App.getInstance(),
-                UpcomingEventWidgetProvider.UpdateService.class));
-
-            return true;
-        }
-    };
+        };
 
     private Preference.OnPreferenceChangeListener mOnAnalyticsPreferenceChange =
         new Preference.OnPreferenceChangeListener() {
@@ -87,7 +74,6 @@ public class SettingsFragment extends PreferenceFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mGoogleApiClient = ((GdgActivity) getActivity()).getGoogleApiClient();
     }
 
     @Override
@@ -107,7 +93,6 @@ public class SettingsFragment extends PreferenceFragment {
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mLoading = new LinearLayout(getActivity());
     }
 
     private void initPreferences() {
@@ -145,49 +130,10 @@ public class SettingsFragment extends PreferenceFragment {
             prefHomeGdgList.setOnPreferenceChangeListener(mOnHomeGdgPreferenceChange);
         }
 
-        CheckBoxPreference prefGoogleSignIn = (CheckBoxPreference) findPreference(PrefUtils.SETTINGS_SIGNED_IN);
-        if (prefGoogleSignIn != null) {
-            prefGoogleSignIn.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    boolean signedIn = (Boolean) newValue;
-                    if (signedIn) {
-                        if (mGoogleApiClient.isConnected()) {
-                            disconnectGoogleApiClient();
-                        }
-                        PrefUtils.setSignedIn(getActivity());
-                        createConnectedGoogleApiClient();
-                    } else {
-                        if (mGoogleApiClient.isConnected()) {
-                            Games.signOut(mGoogleApiClient);
-                            Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
-                            disconnectGoogleApiClient();
-                        }
-                        PrefUtils.setLoggedOut(getActivity());
-                        createConnectedGoogleApiClient();
-                    }
-                    return true;
-                }
-            });
-        }
-
         CheckBoxPreference prefAnalytics = (CheckBoxPreference) findPreference(PrefUtils.SETTINGS_ANALYTICS);
         if (prefAnalytics != null) {
             prefAnalytics.setOnPreferenceChangeListener(mOnAnalyticsPreferenceChange);
         }
-    }
-
-    private void createConnectedGoogleApiClient() {
-        mGoogleApiClient = GoogleApiClientFactory.createWith(getActivity());
-        mGoogleApiClient.registerConnectionCallbacks((SettingsActivity) getActivity());
-        mGoogleApiClient.registerConnectionFailedListener((SettingsActivity) getActivity());
-        mGoogleApiClient.connect();
-    }
-
-    private void disconnectGoogleApiClient() {
-        mGoogleApiClient.unregisterConnectionCallbacks((SettingsActivity) getActivity());
-        mGoogleApiClient.unregisterConnectionFailedListener((SettingsActivity) getActivity());
-        mGoogleApiClient.disconnect();
     }
 
     private void setHomeGdg(final String homeGdg) {
@@ -196,16 +142,11 @@ public class SettingsFragment extends PreferenceFragment {
             protected Void doInBackground(Void... voids) {
 
                 try {
-                    GdgActivity activity = (GdgActivity) getActivity();
-                    String token = GoogleAuthUtil.getToken(
-                        activity,
-                        Plus.AccountApi.getAccountName(activity.getGoogleApiClient()),
-                        "oauth2: " + Scopes.PLUS_LOGIN);
-
+                    String token = PrefUtils.getUserServerAuthCode(getActivity());
                     App.getInstance().getGdgXHub().setHomeGdg("Bearer " + token,
                         new HomeGdgRequest(homeGdg))
                         .execute();
-                } catch (IOException | GoogleAuthException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
 

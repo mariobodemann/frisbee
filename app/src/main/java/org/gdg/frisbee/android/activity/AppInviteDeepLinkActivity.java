@@ -26,9 +26,7 @@ import android.support.v7.app.AppCompatDialogFragment;
 import com.google.android.gms.appinvite.AppInvite;
 import com.google.android.gms.appinvite.AppInviteReferral;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 
-import org.gdg.frisbee.android.app.GoogleApiClientFactory;
 import org.gdg.frisbee.android.common.GdgActivity;
 
 import timber.log.Timber;
@@ -42,11 +40,6 @@ public class AppInviteDeepLinkActivity extends GdgActivity {
     // Invitation intent received while GoogleApiClient was not connected, to be reported
     // on connection
     private Intent mCachedInvitationIntent;
-
-    @Override
-    protected GoogleApiClient createGoogleApiClient() {
-        return GoogleApiClientFactory.createWithoutSignIn(this);
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -125,11 +118,6 @@ public class AppInviteDeepLinkActivity extends GdgActivity {
             updateInvitationStatus(mCachedInvitationIntent);
             mCachedInvitationIntent = null;
         }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        super.onConnectionSuspended(i);
     }
 
     @Override

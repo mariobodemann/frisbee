@@ -27,6 +27,8 @@ import android.widget.FrameLayout;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
@@ -48,6 +50,7 @@ public class FirstStartActivity extends GdgActivity implements
 
     private static final String SIGN_IN_REQUESTED = "SIGN_IN_REQUESTED";
     public static final String ACTION_FIRST_START = "finish_first_start";
+    private static final int RC_SIGN_IN = 1;
 
     @Bind(R.id.pager)
     NonSwipeableViewPager mViewPager;
@@ -108,6 +111,11 @@ public class FirstStartActivity extends GdgActivity implements
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         mViewPagerAdapter.getItem(mViewPager.getCurrentItem()).onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RC_SIGN_IN) {
+            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            handleSignInResult(result);
+        }
     }
 
     @Override
@@ -147,16 +155,10 @@ public class FirstStartActivity extends GdgActivity implements
     }
 
     @Override
-    public void onSignedIn() {
+    public void onSignInButtonClick() {
         PrefUtils.setSignedIn(this);
-        recreateGoogleApiClientIfNeeded();
-
-        if (getGoogleApiClient().isConnected()) {
-            moveToStep3(true);
-        } else {
-            getGoogleApiClient().connect();
-            signInRequested = true;
-        }
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(getGoogleApiClient());
+        startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     @Override
@@ -170,7 +172,7 @@ public class FirstStartActivity extends GdgActivity implements
     }
 
     @Override
-    public void onSkippedSignIn() {
+    public void onSkippedSignInClick() {
         PrefUtils.setLoggedOut(this);
 
         moveToStep3(false);

@@ -33,9 +33,13 @@ import android.widget.Toast;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -58,6 +62,7 @@ public abstract class GdgActivity extends TrackableActivity implements
     private static final int STATE_SIGN_IN = 1;
     private static final int STATE_IN_PROGRESS = 2;
     private static final int RC_SIGN_IN = 101;
+    private static final int RC_GOOGLE_CLIENT_ERROR_RESOLUTION = 102;
     private static final String SAVED_PROGRESS = "SAVED_PROGRESS";
     @Nullable
     @Bind(R.id.content_frame)
@@ -131,25 +136,53 @@ public abstract class GdgActivity extends TrackableActivity implements
     protected void onStart() {
         super.onStart();
 
-        recreateGoogleApiClientIfNeeded();
-        mGoogleApiClient.connect();
+        if (PrefUtils.isSignedIn(this)) {
+            OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+            opr.isDone();
+            if (opr.isDone()) {
+                handleSignInResult(opr.get());
+            } else {
+                opr.setResultCallback(new ResultCallback<GoogleSignInResult>() {
+                    @Override
+                    public void onResult(GoogleSignInResult googleSignInResult) {
+                        handleSignInResult(googleSignInResult);
+                    }
+                });
+            }
+        }
     }
 
-    protected final void recreateGoogleApiClientIfNeeded() {
-        if (isSignedIn != PrefUtils.isSignedIn(this)) {
-            mGoogleApiClient.unregisterConnectionCallbacks(this);
-            mGoogleApiClient.unregisterConnectionFailedListener(this);
-            mGoogleApiClient.disconnect();
+    protected void handleSignInResult(GoogleSignInResult result) {
+        if (result.isSuccess()) {
+            GoogleSignInAccount signInAccount = result.getSignInAccount();
+            PrefUtils.setUser(this, signInAccount.getDisplayName(), signInAccount.getId(),
+                signInAccount.getServerAuthCode());
+        }
+    }
 
-            mGoogleApiClient = createGoogleApiClient();
-        }
+    private void signIn() {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
 
-        if (!mGoogleApiClient.isConnectionCallbacksRegistered(this)) {
-            mGoogleApiClient.registerConnectionCallbacks(this);
-        }
-        if (!mGoogleApiClient.isConnectionFailedListenerRegistered(this)) {
-            mGoogleApiClient.registerConnectionFailedListener(this);
-        }
+    private void signOut() {
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+            new ResultCallback<Status>() {
+                @Override
+                public void onResult(Status status) {
+
+                }
+            });
+    }
+
+    private void revokeAccess() {
+        Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
+            new ResultCallback<Status>() {
+                @Override
+                public void onResult(Status status) {
+
+                }
+            });
     }
 
     /**
@@ -158,17 +191,7 @@ public abstract class GdgActivity extends TrackableActivity implements
      * @return {@link GoogleApiClient} without connecting. {@code connect()} must be called afterwards.
      */
     protected GoogleApiClient createGoogleApiClient() {
-        isSignedIn = PrefUtils.isSignedIn(this);
-        return GoogleApiClientFactory.createWith(this);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        mGoogleApiClient.unregisterConnectionCallbacks(this);
-        mGoogleApiClient.unregisterConnectionFailedListener(this);
-        mGoogleApiClient.disconnect();
+        return GoogleApiClientFactory.create(this);
     }
 
     @Override
@@ -183,7 +206,7 @@ public abstract class GdgActivity extends TrackableActivity implements
 
         if (PrefUtils.isSignedIn(this)) {
             switch (requestCode) {
-                case RC_SIGN_IN:
+                case RC_GOOGLE_CLIENT_ERROR_RESOLUTION:
                     if (responseCode == RESULT_OK) {
                         // If the error resolution was successful we should continue
                         // processing errors.
@@ -229,7 +252,7 @@ public abstract class GdgActivity extends TrackableActivity implements
             mSignInProgress = STATE_IN_PROGRESS;
             startIntentSenderForResult(
                 mSignInIntent.getIntentSender(),
-                RC_SIGN_IN, null, 0, 0, 0
+                RC_GOOGLE_CLIENT_ERROR_RESOLUTION, null, 0, 0, 0
             );
         } catch (IntentSender.SendIntentException e) {
             // The intent was canceled before it was sent.  Attempt to connect to
