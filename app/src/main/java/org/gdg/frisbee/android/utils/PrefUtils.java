@@ -136,6 +136,13 @@ public final class PrefUtils {
         prefs(context).edit().putInt(PREFS_VERSION_CODE, newVersion).apply();
     }
 
+    @SuppressWarnings("unused") // used in alpha flavour
+    public static void resetInitialSettings(final Context context) {
+        prefs(context).edit()
+            .clear()
+            .apply();
+    }
+
     public static boolean isAchievementUnlocked(final Context context, final String achievement) {
         return prefs(context).getBoolean(PREFS_ACHIEVEMENTS_PREFIX + achievement, false);
     }
