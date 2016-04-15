@@ -42,6 +42,7 @@ public class Const {
     public static final DateTime END_TIME_GCP_NEXT = new DateTime(2016, 4, 15, 0, 0, DateTimeZone.UTC);
     //Navigation Drawer
     public static final int DRAWER_HOME = 0;
+    public static final int DRAWER_PHOTOSPHERE = 1;
     public static final int DRAWER_PULSE = 2;
     public static final int DRAWER_ACHIEVEMENTS = 4;
     public static final int DRAWER_GDE = 5;

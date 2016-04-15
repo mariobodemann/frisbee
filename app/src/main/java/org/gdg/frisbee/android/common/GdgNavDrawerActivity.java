@@ -33,6 +33,7 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -147,6 +148,8 @@ public abstract class GdgNavDrawerActivity extends GdgActivity {
         menu.add(GROUP_ID, Const.DRAWER_HOME, Menu.NONE, R.string.home_gdg).setIcon(R.drawable.ic_drawer_home_gdg);
         menu.add(GROUP_ID, Const.DRAWER_GDE, Menu.NONE, R.string.gde).setIcon(R.drawable.ic_drawer_gde);
         menu.add(GROUP_ID, Const.DRAWER_PULSE, Menu.NONE, R.string.pulse).setIcon(R.drawable.ic_drawer_pulse);
+        menu.add(GROUP_ID, Const.DRAWER_PHOTOSPHERE, Menu.NONE, R.string.photosphere)
+            .setIcon(R.drawable.ic_photosphere);
 
         //adding special events in navigation drawer
         final ArrayList<TaggedEventSeries> currentEventSeries =
@@ -254,6 +257,10 @@ public abstract class GdgNavDrawerActivity extends GdgActivity {
                 break;
             case Const.DRAWER_ABOUT:
                 navigateTo(AboutActivity.class, data);
+                break;
+            case Const.DRAWER_PHOTOSPHERE:
+                Toast.makeText(GdgNavDrawerActivity.this, "Start showing photospheres now", Toast.LENGTH_SHORT)
+                    .show();
                 break;
         }
     }
